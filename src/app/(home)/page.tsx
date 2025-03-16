@@ -3,8 +3,9 @@ import React from "react";
 
 export default function Home() {
   return (
-    <div className="font-bold text-2xl text-red-500">
+    <div>
       <Image src="/logo.svg" alt="logo" width={50} height={50} />
+      <p className="text-xl font-semibold tracking-tight">MyTube</p>
     </div>
   );
 }
