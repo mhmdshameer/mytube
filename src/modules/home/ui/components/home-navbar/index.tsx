@@ -14,7 +14,7 @@ const HomeNavbar = () => {
           <Link href="/">
             <div className="flex items-center gap-1 cursor-pointer">
               <Image src="/logo.svg" alt="logo" width={32} height={32} />
-              <p className="text-xl font-semibold tracking-tight">NewTube</p>
+              <p className="text-xl font-semibold tracking-tight">MyTube</p>
             </div>
           </Link>
         </div>
