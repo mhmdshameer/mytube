@@ -75,11 +75,13 @@ const SidebarProvider = React.forwardRef<
   ) => {
     const isMobile = useIsMobile()
     const [openMobile, setOpenMobile] = React.useState(false)
+    const [hasMounted, setHasMounted] = React.useState(false)
 
     // This is the internal state of the sidebar.
     // We use openProp and setOpenProp for control from outside the component.
     const [_open, _setOpen] = React.useState(defaultOpen)
     const open = openProp ?? _open
+    
     const setOpen = React.useCallback(
       (value: boolean | ((value: boolean) => boolean)) => {
         const openState = typeof value === "function" ? value(open) : value
@@ -89,11 +91,31 @@ const SidebarProvider = React.forwardRef<
           _setOpen(openState)
         }
 
-        // This sets the cookie to keep the sidebar state.
-        document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+        if (hasMounted && typeof window !== 'undefined') {
+          try {
+            document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+          } catch (e) {
+            console.error('Failed to set sidebar cookie:', e)
+          }
+        }
       },
-      [setOpenProp, open]
+      [setOpenProp, open, hasMounted]
     )
+
+    React.useEffect(() => {
+      setHasMounted(true)
+      // Read cookie after mount
+      try {
+        const cookies = document.cookie.split(';')
+        const sidebarCookie = cookies.find(cookie => cookie.trim().startsWith(SIDEBAR_COOKIE_NAME + '='))
+        if (sidebarCookie) {
+          const value = sidebarCookie.split('=')[1]
+          _setOpen(value === 'true')
+        }
+      } catch (e) {
+        console.error('Failed to read sidebar cookie:', e)
+      }
+    }, [])
 
     // Helper to toggle the sidebar.
     const toggleSidebar = React.useCallback(() => {
@@ -151,6 +173,7 @@ const SidebarProvider = React.forwardRef<
               className
             )}
             ref={ref}
+            suppressHydrationWarning
             {...props}
           >
             {children}
