@@ -1,9 +1,12 @@
-import React from "react";
 
-export default function Home() {
+import React from "react";
+import { trpc } from "@/trpc/server";
+
+export default async function Home() {
+  const data = await trpc.hello({text: "Shameer"});
   return (
     <div>
-      <p className="text-xl font-semibold tracking-tight">I will load videos in the future</p>
+      Server component says {data.greeting}
     </div>
   );
 }
