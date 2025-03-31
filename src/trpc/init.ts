@@ -1,13 +1,17 @@
+import { auth } from "@clerk/nextjs/server";
 import { initTRPC } from "@trpc/server";
 import { cache } from "react";
+import superjson from "superjson";
 
 export const createTRPCContext = cache( async ()=>{
-
-    return {userId: 'user_123'}
+    const { userId } = await auth();
+    return {clerkUserId: userId}
 })
 
-const t = initTRPC.create({
+export type Context = Awaited<ReturnType<typeof createTRPCContext>>
 
+const t = initTRPC.context<Context>().create({
+transformer: superjson,
 })
 
 
