@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ClientWrapper } from "@/components/client-wrapper";
 import "./globals.css";
-import { TRPCProvider } from "@/trpc/client";
+// import { TRPCProvider } from "@/trpc/client";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,9 +23,9 @@ export default function RootLayout({
       <html lang="en" suppressHydrationWarning>
         <body className={inter.className} suppressHydrationWarning>
           <ClientWrapper>
-            <TRPCProvider>
+            {/* <TRPCProvider> */}
               {children}
-            </TRPCProvider>
+            {/* </TRPCProvider> */}
             </ClientWrapper>
         </body>
       </html>
