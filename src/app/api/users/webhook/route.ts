@@ -22,6 +22,12 @@ export async function POST(req: Request) {
   const svix_signature = headerPayload.get("svix-signature");
   const svix_timestamp = headerPayload.get("svix-timestamp");
 
+  console.log("Received headers:", {
+    svix_id,
+    svix_signature: svix_signature ? "present" : "missing",
+    svix_timestamp
+  });
+
   if(!svix_id || !svix_signature || !svix_timestamp) { 
     console.error("Missing svix headers");
     return new Response("Missing svix headers", { status: 400 });
@@ -39,8 +45,17 @@ export async function POST(req: Request) {
       'svix-signature':svix_signature,
       'svix-timestamp':svix_timestamp
     }) as WebhookEvent;
+    console.log("Webhook verification successful");
   } catch (err) {
     console.error("Webhook verification failed:", (err as Error).message);
+    console.error("Verification details:", {
+      bodyLength: body.length,
+      headersPresent: {
+        svix_id: !!svix_id,
+        svix_signature: !!svix_signature,
+        svix_timestamp: !!svix_timestamp
+      }
+    });
     return new Response("Invalid svix payload", { status: 400 });
   }
 
@@ -58,31 +73,48 @@ export async function POST(req: Request) {
       });
       console.log("User created successfully");
     } catch (error) {
-      console.error("Error creating user:", error);
+      const err = error as Error;
+      console.error("Error creating user:", err.message);
+      console.error("Full error:", err);
       return new Response("Error creating user", { status: 500 });
     }
   }
 
   if(eventType === "user.deleted") {
     const {data} = evt;
-   
-    if(!data.id){
-      return new Response("Missing user ID", { status: 400 });
+    try {
+      if(!data.id){
+        console.error("Missing user ID for deletion");
+        return new Response("Missing user ID", { status: 400 });
+      }
+      await db.delete(users).where(eq(users.clerkId, data.id));
+      console.log("User deleted successfully");
+    } catch (error) {
+      const err = error as Error;
+      console.error("Error deleting user:", err.message);
+      console.error("Full error:", err);
+      return new Response("Error deleting user", { status: 500 });
     }
-
-    await db.delete(users).where(eq(users.clerkId, data.id));
   }
 
   if(eventType === "user.updated") {
     const {data} = evt;
-
-    await db
-    .update(users)
-    .set({
-      name: `${data.first_name} ${data.last_name}`,
-      imageUrl: data.image_url,
-    })
-    .where(eq(users.clerkId, data.id));
+    try {
+      await db
+        .update(users)
+        .set({
+          name: `${data.first_name} ${data.last_name}`,
+          imageUrl: data.image_url,
+        })
+        .where(eq(users.clerkId, data.id));
+      console.log("User updated successfully");
+    } catch (error) {
+      const err = error as Error;
+      console.error("Error updating user:", err.message);
+      console.error("Full error:", err);
+      return new Response("Error updating user", { status: 500 });
+    }
   }
-  return new Response("Webhook received", { status: 200 } );
+
+  return new Response("Webhook received", { status: 200 });
 }
