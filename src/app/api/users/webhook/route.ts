@@ -4,6 +4,7 @@ import { WebhookEvent } from "@clerk/nextjs/server";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   console.log("Webhook received at:", new Date().toISOString());
@@ -12,11 +13,11 @@ export async function POST(req: Request) {
 
   if(!SIGNING_SECRET) {
     console.error("Missing CLERK_SIGNING_SECRET");
-    throw new Error("Missing CLERK_SIGNING_SECRET");
+    return new NextResponse("Missing CLERK_SIGNING_SECRET", { status: 500 });
   }
 
-  const wh = new Webhook(SIGNING_SECRET);
-
+  // Get raw body
+  const payload = await req.text();
   const headerPayload = await headers();
   const svix_id = headerPayload.get("svix-id");
   const svix_signature = headerPayload.get("svix-signature");
@@ -30,37 +31,35 @@ export async function POST(req: Request) {
 
   if(!svix_id || !svix_signature || !svix_timestamp) { 
     console.error("Missing svix headers");
-    return new Response("Missing svix headers", { status: 400 });
+    return new NextResponse("Missing svix headers", { status: 400 });
   }
 
-  const payload = await req.json();
-  console.log("Webhook payload:", JSON.stringify(payload, null, 2));
-  const body = JSON.stringify(payload);
-
+  const wh = new Webhook(SIGNING_SECRET);
   let evt: WebhookEvent;
 
-  try{
-    evt = wh.verify(body, {
-      'svix-id':svix_id,
-      'svix-signature':svix_signature,
-      'svix-timestamp':svix_timestamp
+  try {
+    evt = wh.verify(payload, {
+      "svix-id": svix_id,
+      "svix-timestamp": svix_timestamp,
+      "svix-signature": svix_signature,
     }) as WebhookEvent;
     console.log("Webhook verification successful");
   } catch (err) {
     console.error("Webhook verification failed:", (err as Error).message);
     console.error("Verification details:", {
-      bodyLength: body.length,
+      bodyLength: payload.length,
       headersPresent: {
         svix_id: !!svix_id,
         svix_signature: !!svix_signature,
         svix_timestamp: !!svix_timestamp
       }
     });
-    return new Response("Invalid svix payload", { status: 400 });
+    return new NextResponse("Invalid svix payload", { status: 400 });
   }
 
   const eventType = evt.type;
   console.log("Event type:", eventType);
+  console.log("Event data:", evt.data);
 
   if(eventType === "user.created") {
     const {data} = evt;
@@ -76,7 +75,7 @@ export async function POST(req: Request) {
       const err = error as Error;
       console.error("Error creating user:", err.message);
       console.error("Full error:", err);
-      return new Response("Error creating user", { status: 500 });
+      return new NextResponse("Error creating user", { status: 500 });
     }
   }
 
@@ -85,7 +84,7 @@ export async function POST(req: Request) {
     try {
       if(!data.id){
         console.error("Missing user ID for deletion");
-        return new Response("Missing user ID", { status: 400 });
+        return new NextResponse("Missing user ID", { status: 400 });
       }
       await db.delete(users).where(eq(users.clerkId, data.id));
       console.log("User deleted successfully");
@@ -93,7 +92,7 @@ export async function POST(req: Request) {
       const err = error as Error;
       console.error("Error deleting user:", err.message);
       console.error("Full error:", err);
-      return new Response("Error deleting user", { status: 500 });
+      return new NextResponse("Error deleting user", { status: 500 });
     }
   }
 
@@ -112,9 +111,9 @@ export async function POST(req: Request) {
       const err = error as Error;
       console.error("Error updating user:", err.message);
       console.error("Full error:", err);
-      return new Response("Error updating user", { status: 500 });
+      return new NextResponse("Error updating user", { status: 500 });
     }
   }
 
-  return new Response("Webhook received", { status: 200 });
+  return new NextResponse("Webhook received", { status: 200 });
 }
