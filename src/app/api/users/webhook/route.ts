@@ -6,7 +6,17 @@ import { NextResponse, NextRequest } from "next/server";
 import { WebhookEvent } from "@clerk/nextjs/server";
 
 export async function POST(req: NextRequest) {
+  console.log("Webhook received at:", new Date().toISOString());
+  
   try {
+    // Log headers for debugging
+    const headers = req.headers;
+    console.log("Request headers:", {
+      'svix-id': headers.get('svix-id'),
+      'svix-timestamp': headers.get('svix-timestamp'),
+      'svix-signature': headers.get('svix-signature') ? 'present' : 'missing'
+    });
+
     const evt = await verifyWebhook(req) as WebhookEvent;
     const eventType = evt.type;
     const data = evt.data as { id: string; first_name: string; last_name: string; image_url: string };
@@ -24,7 +34,10 @@ export async function POST(req: NextRequest) {
         console.log("User created successfully");
       } catch (error) {
         console.error("Error creating user:", error);
-        return new NextResponse("Error creating user", { status: 500 });
+        return new NextResponse(JSON.stringify({ error: "Error creating user", details: error }), { 
+          status: 500,
+          headers: { 'Content-Type': 'application/json' }
+        });
       }
     }
 
@@ -37,7 +50,10 @@ export async function POST(req: NextRequest) {
         console.log("User deleted successfully");
       } catch (error) {
         console.error("Error deleting user:", error);
-        return new NextResponse("Error deleting user", { status: 500 });
+        return new NextResponse(JSON.stringify({ error: "Error deleting user", details: error }), { 
+          status: 500,
+          headers: { 'Content-Type': 'application/json' }
+        });
       }
     }
 
@@ -53,13 +69,22 @@ export async function POST(req: NextRequest) {
         console.log("User updated successfully");
       } catch (error) {
         console.error("Error updating user:", error);
-        return new NextResponse("Error updating user", { status: 500 });
+        return new NextResponse(JSON.stringify({ error: "Error updating user", details: error }), { 
+          status: 500,
+          headers: { 'Content-Type': 'application/json' }
+        });
       }
     }
 
     return new NextResponse("Webhook received", { status: 200 });
   } catch (err) {
     console.error("Error verifying webhook:", err);
-    return new NextResponse("Error verifying webhook", { status: 400 });
+    return new NextResponse(JSON.stringify({ 
+      error: "Error verifying webhook", 
+      details: err instanceof Error ? err.message : "Unknown error"
+    }), { 
+      status: 400,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 }
