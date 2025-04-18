@@ -71,20 +71,29 @@ export async function POST(req: NextRequest) {
   }
 
   const eventType = evt.type;
-  const data = evt.data as { id: string; first_name: string; last_name: string; image_url: string };
+  const userData = evt.data as {
+    id: string;
+    first_name: string | null;
+    last_name: string | null;
+    image_url: string;
+    email_addresses: Array<{
+      email_address: string;
+    }>;
+  };
 
   console.log("Event details:", {
     type: eventType,
-    userId: data.id,
-    name: `${data.first_name} ${data.last_name}`
+    userId: userData.id,
+    name: `${userData.first_name || ''} ${userData.last_name || ''}`.trim(),
+    email: userData.email_addresses?.[0]?.email_address
   });
 
   if (eventType === "user.created") {
     try {
       await db.insert(users).values({
-        clerkId: data.id,
-        name: `${data.first_name} ${data.last_name}`,
-        imageUrl: data.image_url,
+        clerkId: userData.id,
+        name: `${userData.first_name || ''} ${userData.last_name || ''}`.trim() || 'Anonymous',
+        imageUrl: userData.image_url,
       });
       console.log("User created successfully");
     } catch (error) {
@@ -101,13 +110,13 @@ export async function POST(req: NextRequest) {
 
   if (eventType === "user.deleted") {
     try {
-      if (!data.id) {
+      if (!userData.id) {
         return new NextResponse(JSON.stringify({ error: "Missing user ID" }), { 
           status: 400,
           headers: { 'Content-Type': 'application/json' }
         });
       }
-      await db.delete(users).where(eq(users.clerkId, data.id));
+      await db.delete(users).where(eq(users.clerkId, userData.id));
       console.log("User deleted successfully");
     } catch (error) {
       console.error("Error deleting user:", error);
@@ -126,10 +135,10 @@ export async function POST(req: NextRequest) {
       await db
         .update(users)
         .set({
-          name: `${data.first_name} ${data.last_name}`,
-          imageUrl: data.image_url,
+          name: `${userData.first_name || ''} ${userData.last_name || ''}`.trim() || 'Anonymous',
+          imageUrl: userData.image_url,
         })
-        .where(eq(users.clerkId, data.id));
+        .where(eq(users.clerkId, userData.id));
       console.log("User updated successfully");
     } catch (error) {
       console.error("Error updating user:", error);
