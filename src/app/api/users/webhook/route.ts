@@ -6,9 +6,13 @@ import { eq } from "drizzle-orm";
 import { NextResponse, NextRequest } from "next/server";
 
 export async function POST(req: NextRequest) {
-  console.log("Webhook received at:", new Date().toISOString());
+  console.log("=== Webhook Handler Started ===");
+  console.log("Timestamp:", new Date().toISOString());
+  console.log("Request URL:", req.url);
+  console.log("Request Method:", req.method);
   
   const SIGNING_SECRET = process.env.CLERK_SIGNING_SECRET;
+  console.log("CLERK_SIGNING_SECRET present:", !!SIGNING_SECRET);
 
   if(!SIGNING_SECRET) {
     console.error("Missing CLERK_SIGNING_SECRET");
@@ -139,6 +143,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  console.log("=== Webhook Handler Completed Successfully ===");
   return new NextResponse(JSON.stringify({ success: true }), { 
     status: 200,
     headers: { 'Content-Type': 'application/json' }
