@@ -90,16 +90,35 @@ export async function POST(req: NextRequest) {
 
   if (eventType === "user.created") {
     try {
-      await db.insert(users).values({
-        clerkId: userData.id,
-        name: `${userData.first_name || ''} ${userData.last_name || ''}`.trim() || 'Anonymous',
-        imageUrl: userData.image_url,
-      });
-      console.log("User created successfully");
+      // Check if user already exists
+      const existingUser = await db
+        .select()
+        .from(users)
+        .where(eq(users.clerkId, userData.id))
+        .limit(1);
+
+      if (existingUser.length > 0) {
+        console.log("User already exists, updating instead");
+        await db
+          .update(users)
+          .set({
+            name: `${userData.first_name || ''} ${userData.last_name || ''}`.trim() || 'Anonymous',
+            imageUrl: userData.image_url,
+          })
+          .where(eq(users.clerkId, userData.id));
+        console.log("Existing user updated successfully");
+      } else {
+        await db.insert(users).values({
+          clerkId: userData.id,
+          name: `${userData.first_name || ''} ${userData.last_name || ''}`.trim() || 'Anonymous',
+          imageUrl: userData.image_url,
+        });
+        console.log("New user created successfully");
+      }
     } catch (error) {
-      console.error("Error creating user:", error);
+      console.error("Error handling user:", error);
       return new NextResponse(JSON.stringify({ 
-        error: "Error creating user", 
+        error: "Error handling user", 
         details: error instanceof Error ? error.message : "Unknown error"
       }), { 
         status: 500,
