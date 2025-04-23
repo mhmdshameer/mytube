@@ -4,12 +4,16 @@ import { HydrateClient, trpc } from "@/trpc/server";
 import { ErrorBoundary } from "react-error-boundary";
 
 export default async function Home() {
-  await trpc.hello.prefetch({ text: "Shameer" });
+  try {
+    await trpc.hello.prefetch({ text: "Shameer" });
+  } catch (error) {
+    console.error("Error prefetching data:", error);
+  }
   
   return (
     <HydrateClient>
       <Suspense fallback={<p>Loading...</p>}>
-        <ErrorBoundary fallback={<p>Something went wrong</p>}>
+        <ErrorBoundary fallback={<p>Something went wrong. Please try again later.</p>}>
           <PageClient />
         </ErrorBoundary>
       </Suspense>
