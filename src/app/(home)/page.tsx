@@ -5,7 +5,7 @@ import { ErrorBoundary } from "react-error-boundary";
 
 export default async function Home() {
   try {
-    await trpc.hello.prefetch({ text: "Shameer" });
+    await trpc.categories.getMany.prefetch();
   } catch (error) {
     console.error("Error prefetching data:", error);
   }
