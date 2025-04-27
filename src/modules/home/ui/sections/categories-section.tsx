@@ -25,5 +25,5 @@ const CategoriesSectionSuspense = ({categoryId}: CategoriesSectionProps) => {
         value: id,
         label: name,
     }))
-    return <FilterCarousel data={data} value={categoryId}/>
+    return <FilterCarousel onSelect={(x) => {console.log(x)}} data={data} value={categoryId}/>
 }

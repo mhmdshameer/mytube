@@ -16,7 +16,7 @@ import { Skeleton } from "./ui/skeleton";
 interface FilterCarouselProps {
   value?: string | null;
   isLoading?: boolean;
-  onSelect?: (value: string) => void;
+  onSelect: (value: string | null) => void;
   data: {
     value: string;
     label: string;
@@ -69,7 +69,10 @@ export const FilterCarousel = ({
       >
         <CarouselContent className="-ml-3">
           {!isLoading && (
-          <CarouselItem className="pl-3 basis-auto">
+          <CarouselItem
+          onClick={() => onSelect(null)}
+          className="pl-3 basis-auto"
+          >
             <Badge
               variant={!value ? "default" : "secondary"}
               className="rounded-lg px-3 py-1 cursor-pointer whitespace-nowrap text-sm"
@@ -79,15 +82,21 @@ export const FilterCarousel = ({
           </CarouselItem>
           )}
           {isLoading && 
-            Array.from({length: 5}).map((_, index) => (
+            Array.from({length: 14}).map((_, index) => (
               <CarouselItem key={index} className="pl-3 basis-auto">
-                <Skeleton className="rounded-lg px-3 py-1 cursor-pointer whitespace-nowrap text-sm" />
+                <Skeleton className="rounded-lg px-3 py-1 w-[100px] font-semibold text-sm" >
+                    &nbsp;
+                </Skeleton>
               </CarouselItem>
             ))
           }
           {!isLoading &&
             data.map((item) => (
-              <CarouselItem key={item.value} className="pl-3 basis-auto">
+              <CarouselItem
+              key={item.value}
+              className="pl-3 basis-auto"
+              onClick={() => onSelect(item.value)}
+              >
                 <Badge
                   variant={value === item.value ? "default" : "secondary"}
                   className="rounded-lg px-3 py-1 cursor-pointer whitespace-nowrap text-sm"
