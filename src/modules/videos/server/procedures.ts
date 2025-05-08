@@ -2,7 +2,7 @@ import { db } from "@/db";
 import { videos } from "@/db/schema";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 
-export const VideosRouter = createTRPCRouter({
+export const videosRouter = createTRPCRouter({
     create: protectedProcedure.mutation(async ({ ctx }) => {
         const {id: userId} = ctx.user;
 
