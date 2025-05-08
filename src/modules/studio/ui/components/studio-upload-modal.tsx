@@ -12,8 +12,8 @@ export const StudioUploadModal = () => {
       utils.studio.getMany.invalidate();
       toast.success("Video created successfully");
     },
-    onError: (error) => {
-      toast.error(error.message);
+    onError: () => {
+      toast.error("Something went wrong");
     },
   });
   return (
