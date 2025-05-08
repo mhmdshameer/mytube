@@ -4,6 +4,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { ClientWrapper } from "@/components/client-wrapper";
 import "./globals.css";
 import { TRPCProvider } from "@/trpc/client";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,6 +25,7 @@ export default function RootLayout({
         <body className={inter.className} suppressHydrationWarning>
           <ClientWrapper>
             <TRPCProvider>
+              <Toaster />
               {children}
             </TRPCProvider>
             </ClientWrapper>
