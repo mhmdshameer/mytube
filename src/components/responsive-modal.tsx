@@ -31,7 +31,7 @@ export const ResponsiveModal = ({
   }
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={onOpenChange} >
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>

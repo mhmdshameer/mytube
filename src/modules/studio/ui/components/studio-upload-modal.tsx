@@ -1,5 +1,6 @@
 "use client";
 
+import { ResponsiveModal } from "@/components/responsive-modal";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/trpc/client";
 import { Loader2, Plus } from "lucide-react";
@@ -17,11 +18,19 @@ export const StudioUploadModal = () => {
     },
   });
   return (
+    <>
+    <ResponsiveModal
+    title="Upload Video"
+    open = {!!create.data}
+    onOpenChange={()=>create.reset()}
+    >
+     <p>This will be an uploader</p>
+    </ResponsiveModal>
     <Button
       variant="secondary"
       onClick={() => create.mutate()}
       disabled={create.isPending}
-    >
+      >
       {create.isPending ? (
         <Loader2 className="w-4 h-4 animate-spin" />
       ) : (
@@ -29,5 +38,6 @@ export const StudioUploadModal = () => {
       )}
       Create
     </Button>
+   </>
   );
 };
