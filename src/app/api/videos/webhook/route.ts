@@ -58,6 +58,16 @@ export const POST = async (request: Request) => {
         .where(eq(videos.muxUploadId, data.upload_id));
       break;
     }
+    case "video.asset.ready": {
+        const data = payload.data as VideoAssetReadyWebhookEvent["data"];
+        const playbackId = data.playback_ids?.[0]?.id;
+
+        if(!playbackId) {
+            return new Response("No playback id found", { status: 400 });
+        }
+
+        const thumbnail = `https://image.mux.com/${playbackId}/thumbnail.jpg`;
+    }
   }
   return new Response("Webhook received", { status: 200 });
 };
