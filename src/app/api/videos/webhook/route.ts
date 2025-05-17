@@ -116,6 +116,30 @@ export const POST = async (request: Request) => {
       await db.delete(videos).where(eq(videos.muxUploadId, data.upload_id));
       break;
     }
+
+    case "video.asset.track.ready": {
+        const data = payload.data as VideoAssetTrackReadyWebhookEvent["data"] & {
+            asset_id: string;
+        }
+
+        // TypeScript incorrectly infers that asset_id is not defined in the data object
+        const asset_id = data.asset_id;
+        const track_id = data.id;
+        const status = data.status;
+
+        if(!asset_id){
+            return new Response("No asset id found", { status: 400 });
+        }
+
+        await db
+        .update(videos)
+        .set({
+            muxTrackId: track_id,
+            muxTrackStatus: status,
+        })
+        .where(eq(videos.muxAssetId, asset_id));
+        break;
+    }
   }
   return new Response("Webhook received", { status: 200 });
 };
