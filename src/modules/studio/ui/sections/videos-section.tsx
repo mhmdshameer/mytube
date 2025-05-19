@@ -16,6 +16,7 @@ import Link from "next/link";
 import { VideoThumbnail } from "@/modules/videos/ui/components/video-thumbnail";
 import { snakeCaseToTitle } from "@/lib/utils";
 import { format } from "date-fns";
+import { Globe2, Lock } from "lucide-react";
 export const VideoSection = () => {
   return (
     <Suspense fallback={<p>Loading...</p>}>
@@ -80,7 +81,16 @@ const VideoSectionSuspense = () => {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>Visibility</TableCell>
+                    <TableCell>
+                      <div className="flex items-center">
+                        {video.visibility === "private" ? (
+                          <Lock className="size-4 mr-2" />
+                        ) : (
+                          <Globe2 className="size-4 mr-2" />
+                        )}
+                        {snakeCaseToTitle(video.visibility)}
+                      </div>
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center">
                         {snakeCaseToTitle(video.muxStatus || "error")}
