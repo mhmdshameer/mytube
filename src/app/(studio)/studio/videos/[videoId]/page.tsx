@@ -1,3 +1,6 @@
+import { VideoView } from "@/modules/studio/ui/views/video-view";
+import { HydrateClient } from "@/trpc/server";
+
  export const dynamic = "force-dynamic";
 
  interface PageProps {
@@ -6,11 +9,11 @@
  
  const Page = async ({params}: PageProps) => {
 
-    const videoId = await params;
+    const {videoId} = await params;
     return (
-        <div>
-            Video Id
-        </div>
+        <HydrateClient>
+            <VideoView videoId={videoId}/>
+        </HydrateClient>
     )
 }
 
